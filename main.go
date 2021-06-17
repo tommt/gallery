@@ -3,13 +3,17 @@ package main
 import (
 	"fmt"
 	"github.com/gorilla/mux"
+	"html/template"
 )
 import "net/http"
 
+var homeTemplate *template.Template
 
 func home(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "text/html")
-	fmt.Fprintf(w, "<h1>Welcome to my awesome site!</h1>")
+	if err := homeTemplate.Execute(w, nil); err != nil {
+		panic(err)
+	}
 }
 
 func contact(w http.ResponseWriter, r *http.Request){
@@ -30,8 +34,12 @@ func notFound(w http.ResponseWriter, r *http.Request){
 
 
 func main(){
+	var err error
+	homeTemplate, err = template.ParseFiles("views/home.gohtml")
+	if err != nil {
+		panic(err)
+	}
 	r := mux.NewRouter()
-	r.NotFoundHandler = http.HandlerFunc(notFound)
 	r.HandleFunc("/", home)
 	r.HandleFunc("/faq", faq)
 	r.HandleFunc("/contact", contact)
