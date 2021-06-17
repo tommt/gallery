@@ -1,51 +1,41 @@
 package main
 
 import (
-	"fmt"
+	"gallery.com/views"
 	"github.com/gorilla/mux"
-	"html/template"
+	"net/http"
 )
-import "net/http"
 
-var homeTemplate *template.Template
-var contactTemplate *template.Template
+
+var (
+	homeView *views.View
+	contactView *views.View
+)
 
 func home(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "text/html")
-	if err := homeTemplate.Execute(w, nil); err != nil {
+	err := homeView.Template.Execute(w, nil)
+	if err != nil {
 		panic(err)
 	}
 }
 
 func contact(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "text/html")
-	if err := contactTemplate.Execute(w, nil); err != nil {
-		panic(err)
-	}
-}
-
-func faq(w http.ResponseWriter, r *http.Request){
-	w.Header().Set("Content-Type", "text/html")
-	fmt.Fprintf(w, "<h1>Frequently Asked Questions!</h1>")
-}
-
-func notFound(w http.ResponseWriter, r *http.Request){
-	w.Header().Set("Content-Type", "text/html")
-	w.WriteHeader(http.StatusNotFound)
-	fmt.Fprintf(w, "<h1>Sorry! Page not Found...</h1>")
-}
-
-
-func main(){
-	var err error
-	homeTemplate, err = template.ParseFiles("views/home.gohtml", "views/layouts/footer.gohtml")
-	contactTemplate, err = template.ParseFiles("views/contact.gohtml","views/layouts/footer.gohtml")
+	err := contactView.Template.Execute(w, nil)
 	if err != nil {
 		panic(err)
 	}
+}
+
+
+
+func main(){
+	homeView = views.NewView("views/home.gohtml")
+	contactView = views.NewView("views/contact.gohtml")
 	r := mux.NewRouter()
 	r.HandleFunc("/", home)
-	r.HandleFunc("/faq", faq)
 	r.HandleFunc("/contact", contact)
+
 	http.ListenAndServe(":3000", r)
 }
